@@ -6,7 +6,7 @@ import Timeline from './pages/Timeline'
 
 function App() {
   return (
-    <Router>
+    <Router basename="/video-timeline">
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/select" element={<MediaSelector />} />
