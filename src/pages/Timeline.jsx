@@ -2397,10 +2397,13 @@ function Timeline() {
     } else if (sharedGroup) {
       // 可以共享行，检查时间冲突
       // 获取共享组内的所有轨道
-      const groupTracks = sameSideTracks.filter(t => 
+      const groupTracks = sameSideTracks.filter(t =>
         sharedRowGroups[sharedGroup].includes(t.name)
       )
-      
+
+      console.log(`🔍 共享组(${sharedGroup})找到${groupTracks.length}个轨道:`)
+      groupTracks.forEach(t => console.log(`  - ${t.name}: row=${t.rowIndex}, offset=${t.offset}, duration=${t.duration}, end=${t.offset + t.duration * 40}`))
+
       // 按row分组
       const tracksByRow = {}
       groupTracks.forEach(track => {
@@ -2414,20 +2417,24 @@ function Timeline() {
       let foundAvailableRow = false
       
       console.log(`检查共享组(${sharedGroup})行: ${sortedRows.join(', ')}，minAllowedRow=${minAllowedRow}`)
-      
+
       for (const row of sortedRows) {
         if (row < minAllowedRow || (maxAllowedRow !== Infinity && row > maxAllowedRow)) {
           console.log(`  跳过row ${row}（超出允许范围）`)
           continue
         }
-        
+
         const tracksInRow = tracksByRow[row]
         let hasConflict = false
-        
+
+        console.log(`  📌 检查row ${row}, 包含${tracksInRow.length}个轨道`)
+
         for (const track of tracksInRow) {
           const trackStartPos = track.offset
           const trackEndPos = track.offset + (track.duration * 40)
-          
+
+          console.log(`    检查时间冲突: 新轨道[${newTrackStartPos}-${newTrackEndPos}] vs ${track.name}[${trackStartPos}-${trackEndPos}]`)
+
           if (newTrackEndPos > trackStartPos && newTrackStartPos < trackEndPos) {
             hasConflict = true
             console.log(`  ✗ row ${row} 有时间冲突 (${track.name})`)
