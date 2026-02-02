@@ -1,0 +1,1283 @@
+.timeline-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: #000;
+  overflow: hidden;
+  overscroll-behavior: none;
+  touch-action: pan-y pinch-zoom;
+  /* 禁用文本选择 */
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  /* 禁用长按弹出菜单 */
+  -webkit-touch-callout: none;
+}
+
+/* Header */
+.timeline-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 1rem;
+  background: #1a1a1a;
+  border-bottom: 1px solid #333;
+  flex-shrink: 0;
+  height: 44px;
+}
+
+.timeline-back-button {
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 0.25rem;
+  display: flex;
+  align-items: center;
+  transition: opacity 0.2s;
+}
+
+.timeline-back-button:active {
+  opacity: 0.6;
+}
+
+.timeline-header-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #fff;
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.timeline-header-title::after {
+  content: '▼';
+  font-size: 0.6rem;
+  opacity: 0.6;
+}
+
+/* Scheme Menu */
+.scheme-menu {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-top: 0.5rem;
+  background: rgba(0, 0, 0, 0.95);
+  border-radius: 8px;
+  padding: 0.5rem;
+  min-width: 180px;
+  z-index: 100;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+.scheme-menu::before {
+  content: '';
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-bottom: 6px solid rgba(0, 0, 0, 0.95);
+}
+
+.scheme-menu-item {
+  background: #2a2a2a;
+  border: none;
+  color: #fff;
+  padding: 0.6rem 0.8rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s;
+  text-align: left;
+  width: 100%;
+  margin-bottom: 0.3rem;
+}
+
+.scheme-menu-item:last-child {
+  margin-bottom: 0;
+}
+
+.scheme-menu-item:hover {
+  background: #3a3a3a;
+}
+
+.scheme-menu-item:active {
+  transform: scale(0.95);
+  background: #667eea;
+}
+
+.export-button {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #fff;
+  border: none;
+  padding: 0.4rem 1rem;
+  border-radius: 16px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.export-button:active {
+  transform: scale(0.95);
+}
+
+/* Preview Area - Dynamic */
+.preview-section {
+  background: #0a0a0a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  flex-shrink: 0;
+  padding: 1rem;
+}
+
+/* 方案切换器 - 移到右上角避免被横屏视频遮挡 */
+.scheme-switcher {
+  position: absolute;
+  right: 1rem;
+  top: 1rem;
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 0.5rem;
+  z-index: 10;
+  transition: all 0.3s ease;
+}
+
+/* 折叠状态下只显示按钮 */
+.scheme-switcher.collapsed {
+  flex-direction: row;
+}
+
+/* 折叠/展开按钮 */
+.scheme-collapse-toggle {
+  background: rgba(26, 26, 26, 0.95);
+  border: 2px solid #444;
+  color: #fff;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  order: -1; /* 始终在最左边 */
+}
+
+.scheme-collapse-toggle:hover {
+  background: rgba(42, 42, 42, 0.98);
+  border-color: #667eea;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.7);
+}
+
+.scheme-collapse-toggle:active {
+  transform: scale(0.95);
+}
+
+/* 方案按钮容器 - 展开时垂直排列 */
+.scheme-switcher:not(.collapsed) {
+  flex-direction: column;
+}
+
+.scheme-switcher:not(.collapsed) .scheme-collapse-toggle {
+  order: 0; /* 在垂直布局时放在顶部 */
+}
+
+.scheme-button-wrapper {
+  position: relative;
+}
+
+.scheme-button {
+  background: rgba(26, 26, 26, 0.95);
+  border: 2px solid #444;
+  color: #fff;
+  padding: 0.6rem 0.8rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+  min-width: 70px;
+  text-align: center;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.6);
+  display: block;
+  width: 100%;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+.scheme-button:hover {
+  background: rgba(42, 42, 42, 0.98);
+  border-color: #667eea;
+  color: #fff;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.7);
+}
+
+.scheme-button.active {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-color: #667eea;
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.scheme-button.saved:not(.active) {
+  border-color: #667eea;
+  color: #667eea;
+  background: rgba(102, 126, 234, 0.15);
+}
+
+.scheme-button:active {
+  transform: scale(0.95);
+}
+
+.scheme-name-input {
+  background: rgba(26, 26, 26, 0.95);
+  border: 2px solid #667eea;
+  color: #fff;
+  padding: 0.6rem 0.8rem;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-align: center;
+  min-width: 70px;
+  flex: 1;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+}
+
+.scheme-name-input:focus {
+  border-color: #764ba2;
+  box-shadow: 0 0 0 3px rgba(118, 75, 162, 0.3);
+}
+
+/* 编辑状态容器 */
+.scheme-edit-container {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+/* 删除按钮 */
+.scheme-delete-button {
+  background: rgba(244, 67, 54, 0.9);
+  border: none;
+  color: #fff;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(244, 67, 54, 0.4);
+}
+
+.scheme-delete-button:hover {
+  background: rgba(244, 67, 54, 1);
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(244, 67, 54, 0.6);
+}
+
+.scheme-delete-button:active {
+  transform: scale(0.95);
+}
+
+
+.preview-canvas {
+  width: 100%;
+  height: 100%;
+  max-width: 90%;
+  max-height: 90%;
+  background: #1a1a1a;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.preview-media {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  display: block;
+}
+
+.preview-placeholder {
+  padding: 3rem;
+  text-align: center;
+  color: #666;
+}
+
+.preview-placeholder-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  opacity: 0.5;
+}
+
+.playback-controls {
+  position: absolute;
+  bottom: 0.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 0.5rem;
+  background: rgba(0, 0, 0, 0.8);
+  padding: 0.4rem 0.8rem;
+  border-radius: 20px;
+  backdrop-filter: blur(10px);
+}
+
+.playback-button {
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.playback-button:active {
+  transform: scale(0.9);
+}
+
+.timecode {
+  color: #fff;
+  font-size: 0.65rem;
+  display: flex;
+  align-items: center;
+  font-variant-numeric: tabular-nums;
+  min-width: 80px;
+  justify-content: center;
+}
+
+/* Resizable Divider */
+.timeline-divider {
+  height: 8px;
+  background: #333;
+  cursor: row-resize;
+  position: relative;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+  z-index: 1;
+}
+
+.timeline-divider:hover {
+  background: #444;
+}
+
+.timeline-divider::before {
+  content: '';
+  width: 40px;
+  height: 3px;
+  background: #666;
+  border-radius: 2px;
+}
+
+/* Timeline Area - Dynamic */
+.timeline-section {
+  background: #1a1a1a;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.timeline-ruler {
+  height: 15px;
+  background: #222;
+  position: relative;
+  overflow: hidden;
+}
+
+.ruler-marks {
+  display: flex;
+  height: 100%;
+  position: relative;
+  padding: 0 0.5rem;
+}
+
+.ruler-mark {
+  flex: 1;
+  border-left: 1px solid #444;
+  position: relative;
+  font-size: 0.5rem;
+  color: #666;
+  padding-left: 0.15rem;
+  padding-top: 0.1rem;
+}
+
+.playhead {
+  position: absolute;
+  top: 0;
+  left: 0.5rem;
+  width: 1.5px;
+  height: 100%;
+  background: #667eea;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.playhead::before {
+  content: '';
+  position: absolute;
+  top: -3px;
+  left: -3.5px;
+  width: 0;
+  height: 0;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 5px solid #667eea;
+}
+
+.timeline-tracks {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+  /* 禁用文本选择 */
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+
+/* 可滚动的轨道容器 - 默认垂直居中 */
+.timeline-tracks-scrollable {
+  flex: 1;
+  overflow-x: auto;
+  overflow-y: auto; /* 支持垂直滚动 */
+  padding: 0;
+  position: relative;
+  overscroll-behavior-x: contain;
+  overscroll-behavior-y: auto; /* 允许正常滚动 */
+  touch-action: pan-x pan-y;
+  /* 显示垂直滚动条 */
+  scrollbar-width: thin;
+  /* 确保有明确的高度，这样才能正常滚动 */
+  min-height: 0;
+}
+
+/* 可滚动容器的内部包装器 - 用于实现垂直对齐 */
+.timeline-tracks-scrollable-inner {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center; /* 默认垂直居中 */
+  gap: 0; /* 移除间距 */
+}
+
+/* 当用户手动展开时，从顶部对齐 */
+.timeline-tracks-scrollable.align-top .timeline-tracks-scrollable-inner {
+  justify-content: flex-start; /* 从顶部开始 */
+}
+
+/* 当内容过多时吸底，不使用flex-end，而是让内容自然流动，靠固定容器来显示视频轨道 */
+.timeline-tracks-scrollable.align-bottom .timeline-tracks-scrollable-inner {
+  justify-content: flex-start; /* 从顶部开始，让用户可以滚动查看 */
+  min-height: auto; /* 不强制最小高度 */
+}
+
+/* 内部内容包装器 */
+.timeline-tracks-scrollable-inner > * {
+  margin-bottom: 0;
+  flex-shrink: 0; /* 防止内容被压缩 */
+}
+
+/* 固定在底部的视频主轨容器 - 默认隐藏 */
+.timeline-main-track-fixed {
+  display: none;
+  flex-shrink: 0;
+  overflow-x: auto;
+  overflow-y: visible;
+  padding: 0;
+  position: relative;
+  overscroll-behavior-x: contain;
+  touch-action: pan-x pan-y;
+  background: #1a1a1a;
+  border-top: 1px solid #333;
+  z-index: 2;
+  /* 确保滚动位置与上方容器同步 */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+}
+
+.timeline-main-track-fixed::-webkit-scrollbar {
+  display: none; /* Chrome/Safari */
+}
+
+/* 当需要吸底时显示，并计算实际需要的高度 */
+.timeline-main-track-fixed.sticky {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  /* 高度由内容决定：视频轨道(50px+margin) + 音乐轨道(根据展开状态) */
+  max-height: fit-content;
+}
+
+/* Center Line */
+.timeline-center-line {
+  position: fixed;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: #667eea;
+  z-index: 5;
+  pointer-events: none;
+  box-shadow: 0 0 8px rgba(102, 126, 234, 0.5);
+  transform: translateX(-1px);
+}
+
+.timeline-center-line::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -4px;
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 8px solid #667eea;
+}
+
+.track {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  position: relative;
+  height: 50px;
+  flex-shrink: 0;
+}
+
+.track-items {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.track-item {
+  min-width: 100px;
+  height: 50px;
+  background: #3a3a3a;
+  border-radius: 4px;
+  overflow: visible; /* 改为visible，让气泡可以显示在轨道外 */
+  cursor: move;
+  position: absolute;
+  transition: box-shadow 0.2s;
+  border: 2px solid transparent;
+  flex-shrink: 0;
+  user-select: none;
+  left: 0;
+  /* 禁用选中高亮 */
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+}
+
+.track-item:hover {
+  border-color: rgba(102, 126, 234, 0.5);
+}
+
+.track-item.selected {
+  border-color: #ffc107;
+  box-shadow: 0 0 0 2px rgba(255, 193, 7, 0.3);
+}
+
+.track-item-preview {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Additional Tracks */
+.additional-track {
+  height: 25px;
+  display: flex;
+  align-items: center;
+  position: relative;
+  flex-shrink: 0;
+  width: 100%;
+  margin-bottom: 1px;
+}
+
+/* 音乐轨道折叠时的容器高度 */
+.additional-track.music-collapsed {
+  min-height: 4px;
+  height: 4px;
+}
+
+.additional-track-item {
+  min-width: 80px;
+  height: 25px;
+  border-radius: 4px;
+  cursor: move;
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.65rem;
+  color: #fff;
+  font-weight: 500;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  flex-shrink: 0;
+  user-select: none;
+  left: 0;
+  top: 0;
+  /* 禁用选中高亮 */
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+}
+
+/* 音乐线样式 - 折叠状态 */
+.additional-track-item.music-line {
+  height: 3px;
+  border-radius: 2px;
+  min-height: 3px;
+  font-size: 0;
+  border: none;
+  cursor: pointer;
+  opacity: 0.8;
+}
+
+/* 画中画轨道 - 黑白格子背景 */
+.additional-track-item.checkerboard {
+  background-image: 
+    linear-gradient(45deg, #333 25%, transparent 25%),
+    linear-gradient(-45deg, #333 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #333 75%),
+    linear-gradient(-45deg, transparent 75%, #333 75%);
+  background-size: 8px 8px;
+  background-position: 0 0, 0 4px, 4px -4px, -4px 0px;
+  background-color: #666;
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+  font-weight: 600;
+}
+
+.additional-track-item:hover {
+  opacity: 0.9;
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.additional-track-item.selected {
+  border-color: #ffc107;
+  border-width: 2px;
+  box-shadow: 0 0 0 3px rgba(255, 193, 7, 0.5);
+}
+
+/* Track Popup */
+.track-popup {
+  position: absolute;
+  top: -45px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.95);
+  border-radius: 8px;
+  padding: 0.4rem;
+  display: flex;
+  gap: 0.3rem;
+  z-index: 150;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  white-space: nowrap;
+}
+
+/* 气泡在下方显示（当轨道在顶部时） */
+.track-popup.below {
+  top: auto;
+  bottom: -45px;
+}
+
+
+.track-popup::after {
+  content: '';
+  position: absolute;
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 6px solid rgba(0, 0, 0, 0.95);
+}
+
+/* 主轨派生功能气泡 - 显示在主轨上方 */
+.track-popup.main-derivative {
+  top: -60px;
+  z-index: 1000;
+  background: rgba(0, 0, 0, 0.98);
+  border: 2px solid rgba(102, 126, 234, 0.6);
+}
+
+.track-popup.main-derivative::after {
+  border-top-color: rgba(0, 0, 0, 0.98);
+}
+
+/* 主轨常规操作气泡 - 显示在主轨下方 */
+.track-popup.main-regular {
+  top: auto;
+  bottom: -60px;
+  z-index: 1000;
+  background: rgba(0, 0, 0, 0.98);
+}
+
+.track-popup.main-regular::after {
+  top: -8px;
+  bottom: auto;
+  border-top: none;
+  border-bottom: 8px solid rgba(0, 0, 0, 0.98);
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+}
+
+.track-popup-button {
+  background: #2a2a2a;
+  border: none;
+  color: #fff;
+  padding: 0.3rem 0.6rem;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s;
+}
+
+.track-popup-button:hover {
+  background: #3a3a3a;
+}
+
+.track-popup-button.derivative {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  font-weight: 500;
+}
+
+.track-popup-button.derivative:hover {
+  background: linear-gradient(135deg, #7c8ef0 0%, #8a5bb0 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(102, 126, 234, 0.4);
+}
+
+.track-popup-button.delete {
+  color: #ff4444;
+}
+
+.track-popup-button:active {
+  transform: scale(0.95);
+}
+
+/* 变短子菜单 */
+.shorten-submenu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 4px;
+  background: rgba(0, 0, 0, 0.98);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  padding: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  z-index: 99999; /* 提高到最高层级，确保在所有内容之上 */
+  min-width: 140px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+.submenu-option {
+  background: #2a2a2a;
+  border: none;
+  color: #fff;
+  padding: 0.5rem 0.75rem;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s;
+  text-align: left;
+}
+
+.submenu-option:hover {
+  background: #3a3a3a;
+}
+
+.submenu-option:active {
+  transform: scale(0.95);
+  background: #4a4a4a;
+}
+
+/* Derivative Toolbar - 派生工具栏 */
+.derivative-toolbar {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 0.4rem;
+  padding: 0.5rem;
+  background: rgba(0, 0, 0, 0.95);
+  border-radius: 6px;
+  z-index: 100;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  white-space: nowrap;
+}
+
+.derivative-toolbar.main-track {
+  top: calc(100% + 8px);
+  bottom: auto;
+}
+
+.derivative-toolbar::after {
+  content: '';
+  position: absolute;
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 6px solid rgba(0, 0, 0, 0.95);
+}
+
+.derivative-toolbar.main-track::after {
+  top: -6px;
+  bottom: auto;
+  border-top: none;
+  border-bottom: 6px solid rgba(0, 0, 0, 0.95);
+}
+
+.derivative-toolbar-button {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  color: #fff;
+  padding: 0.4rem 0.8rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s;
+  font-weight: 500;
+}
+
+.derivative-toolbar-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(102, 126, 234, 0.4);
+}
+
+.derivative-toolbar-button:active {
+  transform: translateY(0);
+}
+
+/* Track Control Buttons - 方向控制按钮 */
+.track-control-buttons {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  gap: 2px;
+  z-index: 50;
+}
+
+.track-control-buttons.left {
+  left: -60px;
+  flex-direction: row;
+}
+
+.track-control-buttons.right {
+  right: -60px;
+  flex-direction: row;
+}
+
+.track-control-btn {
+  width: 26px;
+  height: 26px;
+  background: rgba(102, 126, 234, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: #fff;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+.track-control-btn:hover {
+  background: rgba(102, 126, 234, 1);
+  transform: scale(1.05);
+}
+
+.track-control-btn:active {
+  transform: scale(0.95);
+}
+
+/* Toolbar - 减小高度 */
+.toolbar-section {
+  height: 15%;
+  background: #1a1a1a;
+  border-top: 1px solid #333;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 0.8rem 0.3rem 0.3rem;
+  flex-shrink: 0;
+  gap: 0.2rem;
+  position: relative;
+}
+
+.toolbar-button {
+  background: none;
+  border: none;
+  color: #aaa;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  padding: 0.2rem 0.4rem;
+  border-radius: 6px;
+  min-width: 48px;
+  flex-shrink: 0;
+  position: relative;
+}
+
+.toolbar-button:active {
+  background: #2a2a2a;
+  color: #667eea;
+}
+
+.toolbar-button.active {
+  color: #667eea;
+}
+
+.toolbar-icon {
+  font-size: 1.2rem;
+}
+
+.toolbar-label {
+  font-size: 0.55rem;
+  white-space: nowrap;
+}
+
+/* Submenu */
+.toolbar-submenu {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.95);
+  border-radius: 8px;
+  padding: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  z-index: 100;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.5);
+  margin-bottom: 0.5rem;
+  min-width: 120px;
+}
+
+.toolbar-submenu::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 6px solid rgba(0, 0, 0, 0.95);
+}
+
+.submenu-item {
+  background: #2a2a2a;
+  border: none;
+  color: #fff;
+  padding: 0.5rem 0.8rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s;
+  text-align: left;
+  position: relative;
+}
+
+.submenu-item:hover {
+  background: #3a3a3a;
+}
+
+.submenu-item.active {
+  background: #667eea;
+  color: #fff;
+}
+
+.submenu-item:active {
+  transform: scale(0.95);
+  background: #667eea;
+}
+
+/* Third Menu - 三级菜单 */
+.toolbar-third-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  margin-left: 0.5rem;
+  padding-left: 0.5rem;
+  border-left: 2px solid rgba(102, 126, 234, 0.3);
+}
+
+.third-menu-item {
+  background: #1a1a1a;
+  border: none;
+  color: #aaa;
+  padding: 0.4rem 0.7rem;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s;
+  text-align: left;
+}
+
+.third-menu-item:hover {
+  background: #2a2a2a;
+  color: #fff;
+}
+
+.third-menu-item:active {
+  transform: scale(0.95);
+  background: #667eea;
+  color: #fff;
+}
+
+/* Save Dialog */
+.save-dialog-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(5px);
+}
+
+.save-dialog {
+  background: #1a1a1a;
+  border-radius: 12px;
+  padding: 1.5rem;
+  min-width: 300px;
+  max-width: 90%;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+  border: 1px solid #333;
+}
+
+.save-dialog-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #fff;
+  margin: 0 0 1rem 0;
+  text-align: center;
+}
+
+.save-dialog-message {
+  color: #ccc;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  text-align: center;
+  margin: 0 0 1rem 0;
+}
+
+.save-dialog-input {
+  width: 100%;
+  padding: 0.8rem;
+  background: #2a2a2a;
+  border: 1px solid #444;
+  border-radius: 8px;
+  color: #fff;
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+}
+
+.save-dialog-input:focus {
+  border-color: #667eea;
+}
+
+.save-dialog-input::placeholder {
+  color: #666;
+}
+
+.save-dialog-buttons {
+  display: flex;
+  gap: 0.8rem;
+  margin-top: 1rem;
+}
+
+.save-dialog-button {
+  flex: 1;
+  padding: 0.7rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.save-dialog-button.cancel {
+  background: #2a2a2a;
+  color: #aaa;
+}
+
+.save-dialog-button.cancel:hover {
+  background: #3a3a3a;
+  color: #fff;
+}
+
+.save-dialog-button.confirm {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #fff;
+}
+
+.save-dialog-button.confirm:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.save-dialog-button:active {
+  transform: scale(0.98);
+}
+
+/* Derivative Menu - 派生功能菜单 */
+.derivative-menu-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  overflow-y: auto; /* 添加滚动，防止内容被裁剪 */
+}
+
+.derivative-menu-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0.8rem;
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.2) 0%, rgba(118, 75, 162, 0.2) 100%);
+  border-radius: 8px;
+  border: 1px solid rgba(102, 126, 234, 0.3);
+  flex-shrink: 0; /* 防止头部被压缩 */
+}
+
+.derivative-menu-title {
+  font-size: 0.85rem;
+  color: #fff;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.derivative-menu-close {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #fff;
+  padding: 0.3rem 0.6rem;
+  border-radius: 6px;
+  font-size: 0.7rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-weight: 500;
+}
+
+.derivative-menu-close:hover {
+  background: rgba(255, 255, 255, 0.15);
+  transform: translateY(-1px);
+}
+
+.derivative-menu-close:active {
+  transform: scale(0.95);
+}
+
+.derivative-menu-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: flex-start;
+  flex-shrink: 0; /* 防止按钮区域被压缩 */
+  min-height: fit-content; /* 确保按钮有足够高度 */
+}
+
+.derivative-menu-btn {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  color: #fff;
+  padding: 0.6rem 1rem;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+.derivative-menu-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.5);
+}
+
+.derivative-menu-btn:active {
+  transform: scale(0.95);
+}
+
